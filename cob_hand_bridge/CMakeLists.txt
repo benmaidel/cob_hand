@@ -60,8 +60,11 @@ add_executable(cob_hand_node src/cob_hand_node.cpp)
 target_link_libraries(cob_hand_node cob_hand_pigpio ${Boost_LIBRARIES} ${catkin_LIBRARIES})
 add_dependencies(cob_hand_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
+add_executable(test_hand test/test_hand.cpp)
+target_link_libraries(test_hand cob_hand_pigpio ${Boost_LIBRARIES} ${catkin_LIBRARIES})
+add_dependencies(test_hand ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 ### INSTALL ###
-install(TARGETS ${PROJECT_NAME}_node cob_hand_node
+install(TARGETS ${PROJECT_NAME}_node cob_hand_node test_hand
         RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
