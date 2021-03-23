@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 
 #include <cob_hand_bridge/InitFinger.h>
 #include <cob_hand_bridge/Status.h>
@@ -106,26 +106,34 @@ bool recover(){
 
 void move(double j1, double j2){
 
+  cob_hand_bridge::JointValues new_command = g_default_command;
+  new_command.position_cdeg[0] = angles::to_degrees(j1)*100;
+  new_command.position_cdeg[1] = angles::to_degrees(j2)*100;
+
     if(g_sdhx){
         int16_t position_cdeg[2];
         int16_t velocity_cdeg_s[2];
         int16_t current_100uA[2];
-        position_cdeg[0] = angles::to_degrees(j1)*100;     position_cdeg[1]=angles::to_degrees(j2)*100;
-        velocity_cdeg_s[0] = 0; velocity_cdeg_s[1] = 0;
-        current_100uA[0] = 100;     current_100uA[1] = 100;
+        position_cdeg[0] = new_command.position_cdeg[0];
+        position_cdeg[1] = new_command.position_cdeg[1];
+        velocity_cdeg_s[0] = new_command.velocity_cdeg_s[0];
+        velocity_cdeg_s[1] = new_command.velocity_cdeg_s[1];
+        current_100uA[0] = new_command.current_100uA[0];
+        current_100uA[1] = new_command.current_100uA[1];
         g_sdhx->move(position_cdeg, velocity_cdeg_s, current_100uA);
     }
 }
 
 int main(int argc, char* argv[])
 {
-    
+    g_status.reset ( new  cob_hand_bridge::Status() );
+
     g_stopped_velocity = 0.05;
 
     double stopped_current = 0.1;
 
     g_stopped_current = stopped_current * 1000.0; // (A -> 100uA)
-    
+
     g_default_command.current_100uA[0] = 2120;
     g_default_command.current_100uA[1] = 1400;
 
@@ -135,8 +143,9 @@ int main(int argc, char* argv[])
     g_js.position.resize(g_command.position_cdeg.size());
     g_js.velocity.resize(g_command.position_cdeg.size());
 
-    
+
     while(true){
+      std::cout<<"--Enter number--"<<std::endl;
       std::cout<<"1: init"<<std::endl;
       std::cout<<"2: recover"<<std::endl;
       std::cout<<"3: halt"<<std::endl;
@@ -146,26 +155,40 @@ int main(int argc, char* argv[])
       int value;
       std::cin>>value;
 
+      bool r = false;
       switch(value)
       {
       case 1:
-        std::cout<<"init was "<<init()<<std::endl;
+      {
+        r = init();
+        std::cout<<"init was "<<r<<std::endl;
         break;
+      }
       case 2:
+      {
         std::cout<<"recover was "<<recover()<<std::endl;
         break;
+      }
       case 3:
+      {
         std::cout<<"halt was "<<halt()<<std::endl;
         break;
+      }
       case 4:
+      {
         move(0.6, 0.4);
         break;
+      }
       case 5:
+      {
         move(0.85, -0.1);
         break;
+      }
       case 6:
+      {
         move(-0.85, 1.4);
         break;
+      }
       }
     }
     return 0;
